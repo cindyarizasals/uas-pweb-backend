@@ -16,7 +16,7 @@ try{
     /**
      * Prepare query
      */
-    $statement = $connection->prepare("select * from bu");
+    $statement = $connection->prepare("select * from buku");
     $isOk = $statement->execute();
     $results = $statement->fetchAll(PDO::FETCH_ASSOC);
     $reply['data'] = $results;
