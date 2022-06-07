@@ -5,9 +5,9 @@
  * Time: 15:21
  */
 $dbuser = "root";
-$dbpassword = "xxxxxx";
+$dbpassword = "";
 $dbserver = "localhost";
-$dbname = "kuliah_web";
+$dbname = "kuliahweb";
 
 $dsn = "mysql:host={$dbserver};dbname={$dbname}";
 
