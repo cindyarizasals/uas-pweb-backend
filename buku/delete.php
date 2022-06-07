@@ -34,7 +34,9 @@ if($data === false || empty($data)){
     echo json_encode($reply);
     exit();
 }
-
+/*
+ * Parse data form ke dalam array
+ */
 parse_str($data, $res);
 $isbn = $res['isbn'] ?? '';
 
