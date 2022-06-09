@@ -6,18 +6,11 @@
  *
  * @var $connection PDO
  */
-include '../koneksi.php';
-$reply = [
-    'status' => false,
-    'error' => '',
-    'data' => []
-];
 
 /*
  * Validate http method
  */
 if($_SERVER['REQUEST_METHOD'] !== 'POST'){
-    header('Content-Type: application/json');
     http_response_code(400);
     $reply['error'] = 'POST method required';
     echo json_encode($reply);
@@ -66,7 +59,6 @@ if(empty($abstrak)){
  * Jika filter gagal
  */
 if(!$isValidated){
-    header('Content-Type: application/json');
     echo json_encode($reply);
     http_response_code(400);
     exit(0);
@@ -94,7 +86,6 @@ VALUES (:isbn, :judul, :pengarang, :jumlah, :tanggal, :abstrak)";
      */
     $isOk = $statement->execute();
 }catch (Exception $exception){
-    header('Content-Type: application/json');
     $reply['error'] = $exception->getMessage();
     echo json_encode($reply);
     http_response_code(400);
@@ -115,5 +106,4 @@ if(!$isOk){
  * Set status info true
  */
 $reply['status'] = $isOk;
-header('Content-Type: application/json');
 echo json_encode($reply);

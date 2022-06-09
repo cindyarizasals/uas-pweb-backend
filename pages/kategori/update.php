@@ -5,67 +5,51 @@
  * Time: 20:07
  * @var $connection PDO
  */
-include '../koneksi.php';
-$reply = [
-    'status' => false,
-    'error' => '',
-    'data' => []
-];
 
 /*
  * Validate http method
  */
-if($_SERVER['REQUEST_METHOD'] !== 'POST'){
+if($_SERVER['REQUEST_METHOD'] !== 'PATCH'){
     header('Content-Type: application/json');
     http_response_code(400);
-    $reply['error'] = 'POST method required';
+    $reply['error'] = 'PATCH method required';
     echo json_encode($reply);
     exit();
 }
 /**
- * Get input data POST
+ * Get input data PATCH
  */
-$isbn = $_POST['isbn'] ?? '';
-$judul = $_POST['judul'] ?? '';
-$pengarang = $_POST['pengarang'] ?? '';
-$jumlah = $_POST['jumlah'] ?? 0;
-$abstrak = $_POST['abstrak'] ?? '';
-$tanggal = $_POST['tanggal'] ?? date('Y-m-d');
+$formData = [];
+parse_str(file_get_contents('php://input'), $formData);
+
+$id = $formData['id'] ?? '';
+$nama = $formData['nama'] ?? '';
 
 /**
  * Validation int value
  */
-$jumlahFilter = filter_var($jumlah, FILTER_VALIDATE_INT);
+$idFilter = filter_var($id, FILTER_VALIDATE_INT);
 
 /**
  * Validation empty fields
  */
 $isValidated = true;
-if($jumlahFilter === false){
-    $reply['error'] = "Jumlah harus format INT";
+if($idFilter === false){
+    $reply['error'] = "ID harus format INT";
     $isValidated = false;
 }
-if(empty($isbn)){
-    $reply['error'] = 'ISBN harus diisi';
+if(empty($id)){
+    $reply['error'] = 'ID harus diisi';
     $isValidated = false;
 }
-if(empty($judul)){
-    $reply['error'] = 'JUDUL harus diisi';
-    $isValidated = false;
-}
-if(empty($pengarang)){
-    $reply['error'] = 'PENGARANG harus diisi';
-    $isValidated = false;
-}
-if(empty($abstrak)){
-    $reply['error'] = 'ABSTRAK harus diisi';
+if(empty($nama)){
+    $reply['error'] = 'NAMA harus diisi';
     $isValidated = false;
 }
 /*
  * Jika filter gagal
  */
 if(!$isValidated){
-    header('Content-Type: application/json');
     echo json_encode($reply);
     http_response_code(400);
     exit(0);
@@ -76,9 +60,9 @@ if(!$isValidated){
  * Check if data is exist
  */
 try{
-    $queryCheck = "SELECT * FROM buku where isbn = :isbn";
+    $queryCheck = "SELECT * FROM kategori where id = :id";
     $statement = $connection->prepare($queryCheck);
-    $statement->bindValue(':isbn', $isbn);
+    $statement->bindValue(':id', $idFilter);
     $statement->execute();
     $row = $statement->rowCount();
     /**
@@ -86,14 +70,12 @@ try{
      * rowcount == 0
      */
     if($row === 0){
-        header('Content-Type: application/json');
-        $reply['error'] = 'Data tidak ditemukan ISBN '.$isbn;
+        $reply['error'] = 'Data tidak ditemukan ID '.$idFilter;
         echo json_encode($reply);
         http_response_code(400);
         exit(0);
     }
 }catch (Exception $exception){
-    header('Content-Type: application/json');
     $reply['error'] = $exception->getMessage();
     echo json_encode($reply);
     http_response_code(400);
@@ -105,24 +87,18 @@ try{
  */
 try{
     $fields = [];
-    $query = "UPDATE buku SET judul = :judul, pengarang = :pengarang, jumlah = :jumlah, tanggal = :tanggal, abstrak = :abstrak 
-WHERE isbn = :isbn";
+    $query = "UPDATE kategori SET nama = :nama WHERE id = :id";
     $statement = $connection->prepare($query);
     /**
      * Bind params
      */
-    $statement->bindValue(":isbn", $isbn);
-    $statement->bindValue(":judul", $judul);
-    $statement->bindValue(":pengarang", $pengarang);
-    $statement->bindValue(":jumlah", $jumlah, PDO::PARAM_INT);
-    $statement->bindValue(":tanggal", $tanggal);
-    $statement->bindValue(":abstrak", $abstrak);
+    $statement->bindValue(":id", $id);
+    $statement->bindValue(":nama", $nama);
     /**
      * Execute query
      */
     $isOk = $statement->execute();
 }catch (Exception $exception){
-    header('Content-Type: application/json');
     $reply['error'] = $exception->getMessage();
     echo json_encode($reply);
     http_response_code(400);
@@ -142,5 +118,4 @@ if(!$isOk){
  * Show output to client
  */
 $reply['status'] = $isOk;
-header('Content-Type: application/json');
 echo json_encode($reply);

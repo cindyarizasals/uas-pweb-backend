@@ -5,24 +5,16 @@
  * Time: 15:22
  * @var $connection PDO
  */
-include '../koneksi.php';
-$reply = [
-    'status' => false,
-    'error' => '',
-    'data' => []
-];
-
 try{
     /**
      * Prepare query
      */
-    $statement = $connection->prepare("select * from buku");
+    $statement = $connection->prepare("select * from buku order by created_at desc");
     $isOk = $statement->execute();
     $results = $statement->fetchAll(PDO::FETCH_ASSOC);
     $reply['data'] = $results;
 }catch (Exception $exception){
     $reply['error'] = $exception->getMessage();
-    header('Content-Type: application/json');
     echo json_encode($reply);
     http_response_code(400);
     exit(0);
@@ -38,5 +30,4 @@ if(!$isOk){
  * Output JSON
  */
 $reply['status'] = true;
-header('Content-Type: application/json');
 echo json_encode($reply);

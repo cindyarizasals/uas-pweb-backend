@@ -5,9 +5,9 @@
  * Time: 15:21
  */
 $dbuser = "root";
-$dbpassword = "";
+$dbpassword = "xxxxxx";
 $dbserver = "localhost";
-$dbname = "kuliahweb";
+$dbname = "kuliah_web";
 
 $dsn = "mysql:host={$dbserver};dbname={$dbname}";
 
@@ -15,5 +15,7 @@ $connection = null;
 try{
     $connection = new PDO($dsn, $dbuser, $dbpassword);
 }catch (Exception $exception){
-    die($exception->getMessage());
+    $response['error'] = $exception->getMessage();
+    echo json_encode($response);
+    die();
 }

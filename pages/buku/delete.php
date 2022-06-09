@@ -5,18 +5,11 @@
  * Time: 20:07
  * @var $connection PDO
  */
-include '../koneksi.php';
-$reply = [
-    'status' => false,
-    'error' => '',
-    'data' => []
-];
 
 /*
  * Validate http method
  */
 if($_SERVER['REQUEST_METHOD'] !== 'DELETE'){
-    header('Content-Type: application/json');
     http_response_code(400);
     $reply['error'] = 'DELETE method required';
     echo json_encode($reply);
@@ -27,16 +20,7 @@ if($_SERVER['REQUEST_METHOD'] !== 'DELETE'){
  * Get input data from RAW data
  */
 $data = file_get_contents('php://input');
-if($data === false || empty($data)){
-    header('Content-Type: application/json');
-    http_response_code(400);
-    $reply['error'] = 'Form data tidak tersedia';
-    echo json_encode($reply);
-    exit();
-}
-/*
- * Parse data form ke dalam array
- */
+$res = [];
 parse_str($data, $res);
 $isbn = $res['isbn'] ?? '';
 
@@ -55,14 +39,12 @@ try{
      * rowcount == 0
      */
     if($row === 0){
-        header('Content-Type: application/json');
         $reply['error'] = 'Data tidak ditemukan ISBN '.$isbn;
         echo json_encode($reply);
         http_response_code(400);
         exit(0);
     }
 }catch (Exception $exception){
-    header('Content-Type: application/json');
     $reply['error'] = $exception->getMessage();
     echo json_encode($reply);
     http_response_code(400);
@@ -77,14 +59,15 @@ try{
     $statement = $connection->prepare($queryCheck);
     $statement->bindValue(':isbn', $isbn);
     $statement->execute();
-    $reply['status'] = true;
 }catch (Exception $exception){
-    header('Content-Type: application/json');
     $reply['error'] = $exception->getMessage();
     echo json_encode($reply);
     http_response_code(400);
     exit(0);
 }
 
-header('Content-Type: application/json');
+/*
+ * Send output
+ */
+$reply['status'] = true;
 echo json_encode($reply);

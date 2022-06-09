@@ -1,7 +1,7 @@
 <?php
 //ambil data dari value array
-$var1 = $_GET['var1'];
-$var2 = $_GET['var2'];
+$var1 = $_GET['var1'] ?? 0;
+$var2 = $_GET['var2'] ?? 0;
 // Diproses
 $hasil = $var1 * $var2;
 
@@ -12,5 +12,5 @@ $data = [
         'hasil' => $hasil
     ]
 ];
-header('Content-Type: application/json');
+$response['data'] = $data;
 echo json_encode($data);
