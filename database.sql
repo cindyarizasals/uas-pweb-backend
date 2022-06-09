@@ -1,4 +1,4 @@
-create database kuliahweb;
+create database if not exist kuliahweb ;
 
 use kuliahweb;
 
@@ -11,13 +11,13 @@ create table buku (
     abstrak text,
     kategori int default 0,
     created_at datetime default CURRENT_TIMESTAMP
-)
+);
 
 create table kategori(
     id int primary key AUTO_INCREMENT,
     nama varchar(255),
     created_at datetime default CURRENT_TIMESTAMP
-)
+);
 
 insert into kategori values (1, "Teknologi", default);
 insert into kategori values (2, "Sastra", default);
