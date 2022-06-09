@@ -11,6 +11,12 @@ Frontend menggunakan VueJS [Sourcecode frontend](https://github.com/pizaini/kuli
 
 Backend menggunakan PHP [Sourcecode backend](https://github.com/pizaini/kuliah-web-backend-2022)
 
+## Cara menggunakan
+1. Clone project ini
+2. Pastikan PHP Composer telah terinstall dan jalankan command `composer install`
+3. Import database.sql
+4. Akses app melalui API client application misalnya Postman
+
 ## Apa yang ada diproject ini
 1. Simple URL Routing
     PHP routing sederhana menggunakan include file. Sehingga URL yang dihasilkan menjadi `/buku/index`, `/buku/all`. Lihat pengaturan file .htaccess
