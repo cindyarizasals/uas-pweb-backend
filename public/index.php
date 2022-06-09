@@ -58,7 +58,7 @@ if(empty($file)){
 $includeFile = __DIR__.'/../pages/'.$page.'/'.$file.'.php';
 
 /*
- * Inclue file berdasarkan route
+ * Include file berdasarkan route
  */
 if(!file_exists($includeFile)){
     http_response_code(404);

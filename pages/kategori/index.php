@@ -7,9 +7,9 @@
  */
 try{
     /**
-     * Prepare query
+     * Prepare query limit 50 rows
      */
-    $statement = $connection->prepare("select * from kategori");
+    $statement = $connection->prepare("select * from kategori limit 50");
     $isOk = $statement->execute();
     $results = $statement->fetchAll(PDO::FETCH_ASSOC);
     $reply['data'] = $results;
