@@ -23,7 +23,6 @@ $data = file_get_contents('php://input');
 $res = [];
 parse_str($data, $res);
 $id = $res['id'] ?? '';
-
 /**
  * Validation int value
  */

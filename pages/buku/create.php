@@ -101,9 +101,19 @@ if(!$isOk){
     http_response_code(400);
 }
 
+/*
+ * Get last data
+ */
+$getResult = "SELECT * FROM buku WHERE isbn = :isbn";
+$stm = $connection->prepare($getResult);
+$stm->bindValue(':id', $isbn);
+$stm->execute();
+$result = $stm->fetch(PDO::FETCH_ASSOC);
+
 /**
  * Show output to client
  * Set status info true
  */
+$reply['data'] = $result;
 $reply['status'] = $isOk;
 echo json_encode($reply);
