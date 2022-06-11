@@ -59,6 +59,7 @@ try{
             'jumlah' => $buku['jumlah'],
             'created_at' => $buku['created_at'],
             'kategori' => $kategori,
+            'abstrak' => $buku['abstrak']
         ];
     }
 

@@ -28,6 +28,7 @@ $pengarang = $formData['pengarang'] ?? '';
 $jumlah = $formData['jumlah'] ?? 0;
 $abstrak = $formData['abstrak'] ?? '';
 $tanggal = $formData['tanggal'] ?? date('Y-m-d');
+$idKategori = $formData['kategori'] ?? 0;
 
 /**
  * Validation int value
@@ -99,7 +100,7 @@ try{
  */
 try{
     $fields = [];
-    $query = "UPDATE buku SET judul = :judul, pengarang = :pengarang, jumlah = :jumlah, tanggal = :tanggal, abstrak = :abstrak 
+    $query = "UPDATE buku SET judul = :judul, pengarang = :pengarang, jumlah = :jumlah, tanggal = :tanggal, abstrak = :abstrak, kategori = :kategori 
 WHERE isbn = :isbn";
     $statement = $connection->prepare($query);
     /**
@@ -111,6 +112,7 @@ WHERE isbn = :isbn";
     $statement->bindValue(":jumlah", $jumlah, PDO::PARAM_INT);
     $statement->bindValue(":tanggal", $tanggal);
     $statement->bindValue(":abstrak", $abstrak);
+    $statement->bindValue(":kategori", $idKategori, PDO::PARAM_INT);
     /**
      * Execute query
      */
@@ -131,8 +133,57 @@ if(!$isOk){
     http_response_code(400);
 }
 
+/*
+ * Get data
+ */
+$stmSelect = $connection->prepare("SELECT * FROM buku where isbn = :isbn");
+$stmSelect->bindValue(':isbn', $isbn);
+$stmSelect->execute();
+$dataBuku = $stmSelect->fetch(PDO::FETCH_ASSOC);
+
+/*
+ * Ambil data kategori berdasarkan kolom kategori
+ */
+$dataFinal = [];
+if($dataBuku) {
+    $stmKategori = $connection->prepare("select * from kategori where id = :id");
+    $stmKategori->bindValue(':id', $dataBuku['kategori']);
+    $stmKategori->execute();
+    $resultKategori = $stmKategori->fetch(PDO::FETCH_ASSOC);
+    /*
+     * Defulat kategori 'Tidak diketahui'
+     */
+    $kategori = [
+        'id' => $dataBuku['kategori'],
+        'nama' => 'Tidak diketahui'
+    ];
+    if ($resultKategori) {
+        $kategori = [
+            'id' => $resultKategori['id'],
+            'nama' => $resultKategori['nama']
+        ];
+    }
+
+    /*
+     * Transoform hasil query dari table buku dan kategori
+     * Gabungkan data berdasarkan kolom id kategori
+     * Jika id kategori tidak ditemukan, default "tidak diketahui'
+     */
+    $dataFinal = [
+        'isbn' => $dataBuku['isbn'],
+        'judul' => $dataBuku['judul'],
+        'pengarang' => $dataBuku['pengarang'],
+        'tanggal' => $dataBuku['tanggal'],
+        'jumlah' => $dataBuku['jumlah'],
+        'created_at' => $dataBuku['created_at'],
+        'kategori' => $kategori,
+        'abstrak' => $dataBuku['abstrak'],
+    ];
+}
+
 /**
  * Show output to client
  */
+$reply['data'] = $dataFinal;
 $reply['status'] = $isOk;
 echo json_encode($reply);

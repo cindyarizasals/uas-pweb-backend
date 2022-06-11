@@ -25,6 +25,7 @@ $pengarang = $_POST['pengarang'] ?? '';
 $jumlah = $_POST['jumlah'] ?? 0;
 $abstrak = $_POST['abstrak'] ?? '';
 $tanggal = $_POST['tanggal'] ?? date('Y-m-d');
+$kategori = $_POST['kategori'] ?? 0;
 
 /**
  * Validation int value
@@ -69,8 +70,8 @@ if(!$isValidated){
  * Prepare query
  */
 try{
-    $query = "INSERT INTO buku (isbn, judul, pengarang, jumlah, tanggal, abstrak) 
-VALUES (:isbn, :judul, :pengarang, :jumlah, :tanggal, :abstrak)";
+    $query = "INSERT INTO buku (isbn, judul, pengarang, jumlah, tanggal, abstrak, kategori) 
+VALUES (:isbn, :judul, :pengarang, :jumlah, :tanggal, :abstrak, :kategori)";
     $statement = $connection->prepare($query);
     /**
      * Bind params
@@ -81,6 +82,7 @@ VALUES (:isbn, :judul, :pengarang, :jumlah, :tanggal, :abstrak)";
     $statement->bindValue(":jumlah", $jumlah, PDO::PARAM_INT);
     $statement->bindValue(":tanggal", $tanggal);
     $statement->bindValue(":abstrak", $abstrak);
+    $statement->bindValue(":kategori", $kategori, PDO::PARAM_INT);
     /**
      * Execute query
      */
@@ -106,14 +108,48 @@ if(!$isOk){
  */
 $getResult = "SELECT * FROM buku WHERE isbn = :isbn";
 $stm = $connection->prepare($getResult);
-$stm->bindValue(':id', $isbn);
+$stm->bindValue(':isbn', $isbn);
 $stm->execute();
 $result = $stm->fetch(PDO::FETCH_ASSOC);
+
+/*
+ * Get kategori
+ */
+$stmKategori = $connection->prepare("SELECT * FROM kategori where id = :id");
+$stmKategori->bindValue(':id', $result['kategori']);
+$stmKategori->execute();
+$resultKategori = $stmKategori->fetch(PDO::FETCH_ASSOC);
+/*
+ * Defulat kategori 'Tidak diketahui'
+ */
+$kategori = [
+    'id' => $result['kategori'],
+    'nama' => 'Tidak diketahui'
+];
+if ($resultKategori) {
+    $kategori = [
+        'id' => $resultKategori['id'],
+        'nama' => $resultKategori['nama']
+    ];
+}
+
+/*
+ * Transform result
+ */
+$dataFinal = [
+    'isbn' => $result['isbn'],
+    'judul' => $result['judul'],
+    'pengarang' => $result['pengarang'],
+    'tanggal' => $result['tanggal'],
+    'jumlah' => $result['jumlah'],
+    'created_at' => $result['created_at'],
+    'kategori' => $kategori,
+];
 
 /**
  * Show output to client
  * Set status info true
  */
-$reply['data'] = $result;
+$reply['data'] = $dataFinal;
 $reply['status'] = $isOk;
 echo json_encode($reply);

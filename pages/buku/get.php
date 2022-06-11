@@ -61,14 +61,15 @@ try{
          * Gabungkan data berdasarkan kolom id kategori
          * Jika id kategori tidak ditemukan, default "tidak diketahui'
          */
-        $dataFinal[] = [
+        $dataFinal = [
             'isbn' => $dataBuku['isbn'],
             'judul' => $dataBuku['judul'],
             'pengarang' => $dataBuku['pengarang'],
             'tanggal' => $dataBuku['tanggal'],
             'jumlah' => $dataBuku['jumlah'],
             'created_at' => $dataBuku['created_at'],
-            'kategori' => $resultKategori,
+            'kategori' => $kategori,
+            'abstrak' => $dataBuku['abstrak'],
         ];
     }
 }catch (Exception $exception){
