@@ -17,7 +17,7 @@ if($_SERVER['REQUEST_METHOD'] !== 'GET'){
     exit();
 }
 
-$data = [];
+$dataFinal = [];
 $isbn = $_GET['isbn'] ?? '';
 
 if(empty($isbn)){
@@ -32,7 +32,41 @@ try{
     $statement = $connection->prepare($queryCheck);
     $statement->bindValue(':isbn', $isbn);
     $statement->execute();
-    $data = $statement->fetch(PDO::FETCH_ASSOC);
+    $dataBuku = $statement->fetch(PDO::FETCH_ASSOC);
+
+    /*
+     * Ambil data kategori berdasarkan kolom kategori
+     */
+    if($dataBuku) {
+        $stmKategori = $connection->prepare("select * from kategori where id = :id");
+        $stmKategori->bindValue(':id', $dataBuku['kategori']);
+        $stmKategori->execute();
+        $resultKategori = $stmKategori->fetch(PDO::FETCH_ASSOC);
+        /*
+         * Defulat kategori 'Tidak diketahui'
+         */
+        if (!$resultKategori) {
+            $resultKategori = [
+                'id' => $dataBuku['kategori'],
+                'nama' => 'Tidak diketahui'
+            ];
+        }
+
+        /*
+         * Transoform hasil query dari table buku dan kategori
+         * Gabungkan data berdasarkan kolom id kategori
+         * Jika id kategori tidak ditemukan, default "tidak diketahui'
+         */
+        $dataFinal[] = [
+            'isbn' => $dataBuku['isbn'],
+            'judul' => $dataBuku['judul'],
+            'pengarang' => $dataBuku['pengarang'],
+            'tanggal' => $dataBuku['tanggal'],
+            'jumlah' => $dataBuku['jumlah'],
+            'created_at' => $dataBuku['created_at'],
+            'kategori' => $resultKategori,
+        ];
+    }
 }catch (Exception $exception){
     $reply['error'] = $exception->getMessage();
     echo json_encode($reply);
@@ -43,7 +77,7 @@ try{
 /*
  * Show response
  */
-if(!$data){
+if(!$dataFinal){
     $reply['error'] = 'Data tidak ditemukan ISBN '.$isbn;
     echo json_encode($reply);
     http_response_code(400);
@@ -54,5 +88,5 @@ if(!$data){
  * Otherwise show data
  */
 $reply['status'] = true;
-$reply['data'] = $data;
+$reply['data'] = $dataFinal;
 echo json_encode($reply);

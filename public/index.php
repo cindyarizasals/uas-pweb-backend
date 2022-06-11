@@ -14,7 +14,7 @@ require __DIR__.'/../vendor/autoload.php';
  * Set global response JSON
  *
  */
-  header('Content-Type: application/json');
+header('Content-Type: application/json');
 
 /**
  * Global response format
