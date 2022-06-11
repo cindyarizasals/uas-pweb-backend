@@ -45,10 +45,14 @@ try{
         /*
          * Defulat kategori 'Tidak diketahui'
          */
-        if (!$resultKategori) {
-            $resultKategori = [
-                'id' => $dataBuku['kategori'],
-                'nama' => 'Tidak diketahui'
+        $kategori = [
+            'id' => $dataBuku['kategori'],
+            'nama' => 'Tidak diketahui'
+        ];
+        if ($resultKategori) {
+            $kategori = [
+                'id' => $resultKategori['id'],
+                'nama' => $resultKategori['nama']
             ];
         }
 
