@@ -19,41 +19,32 @@ if($_SERVER['REQUEST_METHOD'] !== 'POST'){
 /**
  * Get input data POST
  */
-$isbn = $_POST['isbn'] ?? '';
 $judul = $_POST['judul'] ?? '';
-$pengarang = $_POST['pengarang'] ?? '';
-$jumlah = $_POST['jumlah'] ?? 0;
-$abstrak = $_POST['abstrak'] ?? '';
+$sutradara = $_POST['sutradara'] ?? '';
+$negara = $_POST['negara'] ?? 0;
+$deskripsi = $_POST['deskripsi'] ?? '';
 $tanggal = $_POST['tanggal'] ?? date('Y-m-d');
 $kategori = $_POST['kategori'] ?? 0;
 
 /**
  * Validation int value
  */
-$jumlahFilter = filter_var($jumlah, FILTER_VALIDATE_INT);
 
 /**
  * Validation empty fields
  */
 $isValidated = true;
-if($jumlahFilter === false){
-    $reply['error'] = "Jumlah harus format INT";
-    $isValidated = false;
-}
-if(empty($isbn)){
-    $reply['error'] = 'ISBN harus diisi';
-    $isValidated = false;
-}
+
 if(empty($judul)){
     $reply['error'] = 'JUDUL harus diisi';
     $isValidated = false;
 }
-if(empty($pengarang)){
-    $reply['error'] = 'PENGARANG harus diisi';
+if(empty($sutradara)){
+    $reply['error'] = 'sutradara harus diisi';
     $isValidated = false;
 }
-if(empty($abstrak)){
-    $reply['error'] = 'ABSTRAK harus diisi';
+if(empty($deskripsi)){
+    $reply['error'] = 'deskripsi harus diisi';
     $isValidated = false;
 }
 /*
@@ -70,23 +61,23 @@ if(!$isValidated){
  * Prepare query
  */
 try{
-    $query = "INSERT INTO buku (isbn, judul, pengarang, jumlah, tanggal, abstrak, kategori) 
-VALUES (:isbn, :judul, :pengarang, :jumlah, :tanggal, :abstrak, :kategori)";
+    $query = "INSERT INTO film (judul, sutradara, tanggal, deskripsi, kategori, negara) 
+VALUES (:judul, :sutradara, :tanggal, :deskripsi, :kategori, :negara)";
     $statement = $connection->prepare($query);
     /**
      * Bind params
      */
-    $statement->bindValue(":isbn", $isbn);
     $statement->bindValue(":judul", $judul);
-    $statement->bindValue(":pengarang", $pengarang);
-    $statement->bindValue(":jumlah", $jumlah, PDO::PARAM_INT);
+    $statement->bindValue(":sutradara", $sutradara);
+    $statement->bindValue(":negara", $negara, PDO::PARAM_INT);
     $statement->bindValue(":tanggal", $tanggal);
-    $statement->bindValue(":abstrak", $abstrak);
+    $statement->bindValue(":deskripsi", $deskripsi);
     $statement->bindValue(":kategori", $kategori, PDO::PARAM_INT);
     /**
      * Execute query
      */
     $isOk = $statement->execute();
+    $id = $connection->lastInsertId();
 }catch (Exception $exception){
     $reply['error'] = $exception->getMessage();
     echo json_encode($reply);
@@ -106,9 +97,9 @@ if(!$isOk){
 /*
  * Get last data
  */
-$getResult = "SELECT * FROM buku WHERE isbn = :isbn";
+$getResult = "SELECT * FROM film WHERE id = :id";
 $stm = $connection->prepare($getResult);
-$stm->bindValue(':isbn', $isbn);
+$stm->bindValue(':id', $id);
 $stm->execute();
 $result = $stm->fetch(PDO::FETCH_ASSOC);
 
@@ -134,16 +125,38 @@ if ($resultKategori) {
 }
 
 /*
+ * Get negara
+ */
+$stmNegara = $connection->prepare("SELECT * FROM negara where id = :id");
+$stmNegara->bindValue(':id', $result['negara']);
+$stmNegara->execute();
+$resultNegara = $stmNegara->fetch(PDO::FETCH_ASSOC);
+/*
+ * Defulat negara 'Tidak diketahui'
+ */
+$negara = [
+    'id' => $result['negara'],
+    'nama' => 'Tidak diketahui'
+];
+if ($resultNegara) {
+    $negara = [
+        'id' => $resultNegara['id'],
+        'nama' => $resultNegara['nama']
+    ];
+}
+
+/*
  * Transform result
  */
 $dataFinal = [
-    'isbn' => $result['isbn'],
+    'id' => $result['id'],
     'judul' => $result['judul'],
-    'pengarang' => $result['pengarang'],
+    'sutradara' => $result['sutradara'],
     'tanggal' => $result['tanggal'],
-    'jumlah' => $result['jumlah'],
+    
     'created_at' => $result['created_at'],
     'kategori' => $kategori,
+    'negara' => $negara,
 ];
 
 /**

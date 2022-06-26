@@ -6,8 +6,8 @@
     Header always set Access-Control-Max-Age 1728000
 
     # Tanda bintang (wildcard): Membolehkan semua aplikasi mengakses aplikasi
-    #Header always set Access-Control-Allow-Origin: "*"
-    Header always set Access-Control-Allow-Origin: "https://kuliah-web-2022.pages.dev"
+    Header always set Access-Control-Allow-Origin: "*"
+    #Header always set Access-Control-Allow-Origin: "https://kuliah-web-2022.pages.dev"
 
     # Enable MORE http METHODS
     Header always set Access-Control-Allow-Methods: "GET,POST,OPTIONS,DELETE,PUT,PATCH"

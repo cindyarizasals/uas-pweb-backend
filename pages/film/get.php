@@ -18,41 +18,58 @@ if($_SERVER['REQUEST_METHOD'] !== 'GET'){
 }
 
 $dataFinal = [];
-$isbn = $_GET['isbn'] ?? '';
+$id = $_GET['id'] ?? '';
 
-if(empty($isbn)){
-    $reply['error'] = 'ISBN tidak boleh kosong';
+if(empty($id)){
+    $reply['error'] = 'id tidak boleh kosong';
     echo json_encode($reply);
     http_response_code(400);
     exit(0);
 }
 
 try{
-    $queryCheck = "SELECT * FROM buku where isbn = :isbn";
+    $queryCheck = "SELECT * FROM film where id = :id";
     $statement = $connection->prepare($queryCheck);
-    $statement->bindValue(':isbn', $isbn);
+    $statement->bindValue(':id', $id);
     $statement->execute();
-    $dataBuku = $statement->fetch(PDO::FETCH_ASSOC);
+    $dataFilm = $statement->fetch(PDO::FETCH_ASSOC);
 
     /*
      * Ambil data kategori berdasarkan kolom kategori
      */
-    if($dataBuku) {
+    if($dataFilm) {
         $stmKategori = $connection->prepare("select * from kategori where id = :id");
-        $stmKategori->bindValue(':id', $dataBuku['kategori']);
+        $stmKategori->bindValue(':id', $dataFilm['kategori']);
         $stmKategori->execute();
         $resultKategori = $stmKategori->fetch(PDO::FETCH_ASSOC);
         /*
          * Defulat kategori 'Tidak diketahui'
          */
         $kategori = [
-            'id' => $dataBuku['kategori'],
+            'id' => $dataFilm['kategori'],
             'nama' => 'Tidak diketahui'
         ];
         if ($resultKategori) {
             $kategori = [
                 'id' => $resultKategori['id'],
                 'nama' => $resultKategori['nama']
+            ];
+        }
+        $stmNegara = $connection->prepare("select * from negara where id = :id");
+        $stmNegara->bindValue(':id', $dataFilm['negara']);
+        $stmNegara->execute();
+        $resultNegara = $stmNegara->fetch(PDO::FETCH_ASSOC);
+        /*
+         * Defulat negara 'Tidak diketahui'
+         */
+        $negara = [
+            'id' => $dataFilm['negara'],
+            'nama' => 'Tidak diketahui'
+        ];
+        if ($resultNegara) {
+            $negara = [
+                'id' => $resultNegara['id'],
+                'nama' => $resultNegara['nama']
             ];
         }
 
@@ -62,14 +79,14 @@ try{
          * Jika id kategori tidak ditemukan, default "tidak diketahui'
          */
         $dataFinal = [
-            'isbn' => $dataBuku['isbn'],
-            'judul' => $dataBuku['judul'],
-            'pengarang' => $dataBuku['pengarang'],
-            'tanggal' => $dataBuku['tanggal'],
-            'jumlah' => $dataBuku['jumlah'],
-            'created_at' => $dataBuku['created_at'],
+            'id' => $dataFilm['id'],
+            'judul' => $dataFilm['judul'],
+            'sutradara' => $dataFilm['sutradara'],
+            'tanggal' => $dataFilm['tanggal'],
+            'created_at' => $dataFilm['created_at'],
             'kategori' => $kategori,
-            'abstrak' => $dataBuku['abstrak'],
+            'negara' => $negara,
+            'deskripsi' => $dataFilm['deskripsi'],
         ];
     }
 }catch (Exception $exception){
@@ -83,7 +100,7 @@ try{
  * Show response
  */
 if(!$dataFinal){
-    $reply['error'] = 'Data tidak ditemukan ISBN '.$isbn;
+    $reply['error'] = 'Data tidak ditemukan id '.$id;
     echo json_encode($reply);
     http_response_code(400);
     exit(0);

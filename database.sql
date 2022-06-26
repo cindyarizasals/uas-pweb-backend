@@ -1,7 +1,3 @@
-create database if not exist kuliahweb ;
-
-use kuliahweb;
-
 create table buku (
     isbn varchar(15) primary key,
     judul varchar(255),

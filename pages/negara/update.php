@@ -60,7 +60,7 @@ if(!$isValidated){
  * Check if data is exist
  */
 try{
-    $queryCheck = "SELECT * FROM kategori where id = :id";
+    $queryCheck = "SELECT * FROM negara where id = :id";
     $statement = $connection->prepare($queryCheck);
     $statement->bindValue(':id', $idFilter);
     $statement->execute();
@@ -87,7 +87,7 @@ try{
  */
 try{
     $fields = [];
-    $query = "UPDATE kategori SET nama = :nama WHERE id = :id";
+    $query = "UPDATE negara SET nama = :nama WHERE id = :id";
     $statement = $connection->prepare($query);
     /**
      * Bind params
@@ -117,7 +117,7 @@ if(!$isOk){
 /*
  * Get data
  */
-$stmSelect = $connection->prepare("SELECT * FROM kategori where id = :id");
+$stmSelect = $connection->prepare("SELECT * FROM negara where id = :id");
 $stmSelect->bindValue(':id', $id);
 $stmSelect->execute();
 $dataFilm = $stmSelect->fetch(PDO::FETCH_ASSOC);

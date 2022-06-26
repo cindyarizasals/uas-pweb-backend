@@ -22,41 +22,39 @@ if($_SERVER['REQUEST_METHOD'] !== 'PATCH'){
 $formData = [];
 parse_str(file_get_contents('php://input'), $formData);
 
-$isbn = $formData['isbn'] ?? '';
+$id = $formData['id'] ?? '';
 $judul = $formData['judul'] ?? '';
-$pengarang = $formData['pengarang'] ?? '';
-$jumlah = $formData['jumlah'] ?? 0;
-$abstrak = $formData['abstrak'] ?? '';
+$sutradara = $formData['sutradara'] ?? '';
+
+$deskripsi = $formData['deskripsi'] ?? '';
 $tanggal = $formData['tanggal'] ?? date('Y-m-d');
 $idKategori = $formData['kategori'] ?? 0;
+$idNegara = $formData['negara'] ?? 0;
 
 /**
  * Validation int value
  */
-$jumlahFilter = filter_var($jumlah, FILTER_VALIDATE_INT);
+
 
 /**
  * Validation empty fields
  */
 $isValidated = true;
-if($jumlahFilter === false){
-    $reply['error'] = "Jumlah harus format INT";
-    $isValidated = false;
-}
-if(empty($isbn)){
-    $reply['error'] = 'ISBN harus diisi';
+
+if(empty($id)){
+    $reply['error'] = 'id harus diisi';
     $isValidated = false;
 }
 if(empty($judul)){
     $reply['error'] = 'JUDUL harus diisi';
     $isValidated = false;
 }
-if(empty($pengarang)){
-    $reply['error'] = 'PENGARANG harus diisi';
+if(empty($sutradara)){
+    $reply['error'] = 'sutradara harus diisi';
     $isValidated = false;
 }
-if(empty($abstrak)){
-    $reply['error'] = 'ABSTRAK harus diisi';
+if(empty($deskripsi)){
+    $reply['error'] = 'deskripsi harus diisi';
     $isValidated = false;
 }
 /*
@@ -73,9 +71,9 @@ if(!$isValidated){
  * Check if data is exist
  */
 try{
-    $queryCheck = "SELECT * FROM buku where isbn = :isbn";
+    $queryCheck = "SELECT * FROM film where id = :id";
     $statement = $connection->prepare($queryCheck);
-    $statement->bindValue(':isbn', $isbn);
+    $statement->bindValue(':id', $id);
     $statement->execute();
     $row = $statement->rowCount();
     /**
@@ -83,7 +81,7 @@ try{
      * rowcount == 0
      */
     if($row === 0){
-        $reply['error'] = 'Data tidak ditemukan ISBN '.$isbn;
+        $reply['error'] = 'Data tidak ditemukan id '.$id;
         echo json_encode($reply);
         http_response_code(400);
         exit(0);
@@ -100,19 +98,19 @@ try{
  */
 try{
     $fields = [];
-    $query = "UPDATE buku SET judul = :judul, pengarang = :pengarang, jumlah = :jumlah, tanggal = :tanggal, abstrak = :abstrak, kategori = :kategori 
-WHERE isbn = :isbn";
+    $query = "UPDATE film SET judul = :judul, sutradara = :sutradara, tanggal = :tanggal, deskripsi = :deskripsi, kategori = :kategori, negara = :negara
+WHERE id = :id";
     $statement = $connection->prepare($query);
     /**
      * Bind params
      */
-    $statement->bindValue(":isbn", $isbn);
+    $statement->bindValue(":id", $id);
     $statement->bindValue(":judul", $judul);
-    $statement->bindValue(":pengarang", $pengarang);
-    $statement->bindValue(":jumlah", $jumlah, PDO::PARAM_INT);
+    $statement->bindValue(":sutradara", $sutradara);
     $statement->bindValue(":tanggal", $tanggal);
-    $statement->bindValue(":abstrak", $abstrak);
+    $statement->bindValue(":deskripsi", $deskripsi);
     $statement->bindValue(":kategori", $idKategori, PDO::PARAM_INT);
+    $statement->bindValue(":negara", $idNegara, PDO::PARAM_INT);
     /**
      * Execute query
      */
@@ -136,25 +134,25 @@ if(!$isOk){
 /*
  * Get data
  */
-$stmSelect = $connection->prepare("SELECT * FROM buku where isbn = :isbn");
-$stmSelect->bindValue(':isbn', $isbn);
+$stmSelect = $connection->prepare("SELECT * FROM film where id = :id");
+$stmSelect->bindValue(':id', $id);
 $stmSelect->execute();
-$dataBuku = $stmSelect->fetch(PDO::FETCH_ASSOC);
+$datafilm = $stmSelect->fetch(PDO::FETCH_ASSOC);
 
 /*
  * Ambil data kategori berdasarkan kolom kategori
  */
 $dataFinal = [];
-if($dataBuku) {
+if($datafilm) {
     $stmKategori = $connection->prepare("select * from kategori where id = :id");
-    $stmKategori->bindValue(':id', $dataBuku['kategori']);
+    $stmKategori->bindValue(':id', $datafilm['kategori']);
     $stmKategori->execute();
     $resultKategori = $stmKategori->fetch(PDO::FETCH_ASSOC);
     /*
      * Defulat kategori 'Tidak diketahui'
      */
     $kategori = [
-        'id' => $dataBuku['kategori'],
+        'id' => $datafilm['kategori'],
         'nama' => 'Tidak diketahui'
     ];
     if ($resultKategori) {
@@ -165,19 +163,59 @@ if($dataBuku) {
     }
 
     /*
-     * Transoform hasil query dari table buku dan kategori
+     * Transoform hasil query dari table film dan kategori
      * Gabungkan data berdasarkan kolom id kategori
      * Jika id kategori tidak ditemukan, default "tidak diketahui'
      */
     $dataFinal = [
-        'isbn' => $dataBuku['isbn'],
-        'judul' => $dataBuku['judul'],
-        'pengarang' => $dataBuku['pengarang'],
-        'tanggal' => $dataBuku['tanggal'],
-        'jumlah' => $dataBuku['jumlah'],
-        'created_at' => $dataBuku['created_at'],
+        'id' => $datafilm['id'],
+        'judul' => $datafilm['judul'],
+        'sutradara' => $datafilm['sutradara'],
+        'tanggal' => $datafilm['tanggal'],
+
+        'created_at' => $datafilm['created_at'],
         'kategori' => $kategori,
-        'abstrak' => $dataBuku['abstrak'],
+        'deskripsi' => $datafilm['deskripsi'],
+    ];
+}
+
+/*
+ * Ambil data negara berdasarkan kolom negara
+ */
+$dataFinal = [];
+if($datafilm) {
+    $stmNegara = $connection->prepare("select * from negara where id = :id");
+    $stmNegara->bindValue(':id', $datafilm['negara']);
+    $stmNegara->execute();
+    $resultNegara = $stmNegara->fetch(PDO::FETCH_ASSOC);
+    /*
+     * Defulat negara 'Tidak diketahui'
+     */
+    $negara = [
+        'id' => $datafilm['negara'],
+        'nama' => 'Tidak diketahui'
+    ];
+    if ($resultNegara) {
+        $negara = [
+            'id' => $resultNegara['id'],
+            'nama' => $resultNegara['nama']
+        ];
+    }
+
+    /*
+     * Transoform hasil query dari table film dan negara
+     * Gabungkan data berdasarkan kolom id negara
+     * Jika id negara tidak ditemukan, default "tidak diketahui'
+     */
+    $dataFinal = [
+        'id' => $datafilm['id'],
+        'judul' => $datafilm['judul'],
+        'sutradara' => $datafilm['sutradara'],
+        'tanggal' => $datafilm['tanggal'],
+        'negara' => $negara,
+        'created_at' => $datafilm['created_at'],
+        'kategori' => $kategori,
+        'deskripsi' => $datafilm['deskripsi'],
     ];
 }
 

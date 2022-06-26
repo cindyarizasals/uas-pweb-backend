@@ -22,16 +22,16 @@ if($_SERVER['REQUEST_METHOD'] !== 'DELETE'){
 $data = file_get_contents('php://input');
 $res = [];
 parse_str($data, $res);
-$isbn = $res['isbn'] ?? '';
+$id = $res['id'] ?? '';
 
 /**
  *
- * Cek apakah ISBN tersedia
+ * Cek apakah id tersedia
  */
 try{
-    $queryCheck = "SELECT * FROM buku where isbn = :isbn";
+    $queryCheck = "SELECT * FROM film where id = :id";
     $statement = $connection->prepare($queryCheck);
-    $statement->bindValue(':isbn', $isbn);
+    $statement->bindValue(':id', $id);
     $statement->execute();
     $row = $statement->rowCount();
     /**
@@ -39,7 +39,7 @@ try{
      * rowcount == 0
      */
     if($row === 0){
-        $reply['error'] = 'Data tidak ditemukan ISBN '.$isbn;
+        $reply['error'] = 'Data tidak ditemukan id '.$id;
         echo json_encode($reply);
         http_response_code(400);
         exit(0);
@@ -55,9 +55,9 @@ try{
  * Hapus data
  */
 try{
-    $queryCheck = "DELETE FROM buku where isbn = :isbn";
+    $queryCheck = "DELETE FROM film where id = :id";
     $statement = $connection->prepare($queryCheck);
-    $statement->bindValue(':isbn', $isbn);
+    $statement->bindValue(':id', $id);
     $statement->execute();
 }catch (Exception $exception){
     $reply['error'] = $exception->getMessage();
